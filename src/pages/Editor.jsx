@@ -19,13 +19,16 @@ export default function Editor() {
   const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
-    if (isNew) {
-      setAssignment(blankAssignment())
-    } else {
-      const a = await fetchAssignment(slug)
-      if (!a) { nav('/dashboard'); return }
-      setAssignment(a)
+    async function load() {
+      if (isNew) {
+        setAssignment(blankAssignment())
+      } else {
+        const a = await fetchAssignment(slug)
+        if (!a) { nav('/dashboard'); return }
+        setAssignment(a)
+      }
     }
+    load()
   }, [slug])
 
   if (!assignment) return <div className={styles.loading}>Loading…</div>
@@ -670,3 +673,4 @@ Requirements:
 
 Return ONLY the JSON, wrapped in \`\`\`json\`\`\` tags.`
 }
+
