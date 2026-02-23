@@ -42,7 +42,7 @@ export default function Editor() {
     setDirty(true)
   }
 
-  function save() {
+  async function save() {
     // Auto-generate slug from title + chapterLabel if new
     const a = { ...assignment }
     if (!a.slug || isNew) {
@@ -673,4 +673,5 @@ Requirements:
 
 Return ONLY the JSON, wrapped in \`\`\`json\`\`\` tags.`
 }
+
 
