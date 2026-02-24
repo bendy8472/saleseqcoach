@@ -23,7 +23,7 @@ export async function fetchAssignments() {
 
 export async function fetchAssignment(slug) {
   try {
-    const res = await fetch(`${API_BASE}/${slug}`)
+    const res = await fetch(`${API_BASE}?slug=${encodeURIComponent(slug)}`)
     if (!res.ok) throw new Error('Not found')
     return await res.json()
   } catch {
