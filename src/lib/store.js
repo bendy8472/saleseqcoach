@@ -13,7 +13,8 @@ export async function fetchAssignments() {
   try {
     const res = await fetch(API_BASE)
     if (!res.ok) throw new Error('API error')
-    const data = await res.json()
+    const raw = await res.json()
+    const data = Array.isArray(raw) ? raw : (raw.value || [])
     if (data.length) return data
     return loadFromLocalStorage()
   } catch {
@@ -23,9 +24,11 @@ export async function fetchAssignments() {
 
 export async function fetchAssignment(slug) {
   try {
-    const res = await fetch(`${API_BASE}?slug=${encodeURIComponent(slug)}`)
-    if (!res.ok) throw new Error('Not found')
-    return await res.json()
+    const res = await fetch(API_BASE)
+    if (!res.ok) throw new Error('API error')
+    const raw = await res.json()
+    const data = Array.isArray(raw) ? raw : (raw.value || [])
+    return data.find(a => a.slug === slug) || null
   } catch {
     return loadFromLocalStorage().find(a => a.slug === slug) || null
   }
@@ -200,3 +203,4 @@ function getSeedData() {
     }
   ]
 }
+
