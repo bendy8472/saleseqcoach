@@ -673,5 +673,3 @@ Requirements:
 
 Return ONLY the JSON, wrapped in \`\`\`json\`\`\` tags.`
 }
-
-
