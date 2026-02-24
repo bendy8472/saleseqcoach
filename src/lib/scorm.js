@@ -125,10 +125,11 @@ function buildLauncher(slug, title) {
     if (!api) return;
     var d = e.data;
     if (d.type === 'score') {
+      var max = d.max || 50;
       api.SetValue('cmi.score.raw',    String(d.raw));
       api.SetValue('cmi.score.min',    '0');
-      api.SetValue('cmi.score.max',    '100');
-      api.SetValue('cmi.score.scaled', String((d.raw / 100).toFixed(4)));
+      api.SetValue('cmi.score.max',    String(max));
+      api.SetValue('cmi.score.scaled', String((d.raw / max).toFixed(4)));
       api.Commit('');
     }
     if (d.type === 'complete') {
