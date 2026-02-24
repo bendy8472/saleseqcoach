@@ -411,7 +411,7 @@
   border: 1px solid transparent;
   font-size: 14px;
   line-height: 1.6;
-  color: var(--text);
+  color: #1e293b;
   word-break: break-word;
 }
 .tBubbleRight {
@@ -423,9 +423,8 @@
   display: block;
   font-size: 12px;
   font-style: italic;
-  color: var(--muted);
+  color: #64748b;
   margin-bottom: 3px;
-  opacity: 0.8;
 }
 
 /* ── Step Controls ── */
