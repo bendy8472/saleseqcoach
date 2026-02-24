@@ -54,10 +54,11 @@ export default function Assignment() {
     if (p1State.submitted) return
     let correct = 0
     p1.questions.forEach(q => { if (p1State.answers[q.id] === q.correct) correct++ })
-    const score = Math.round((correct / qCount) * 100)
-    setP1State(prev => ({ ...prev, submitted: true, score }))
+    const pct = Math.round((correct / qCount) * 100)
+    const pts = Math.round((correct / qCount) * 25)
+    setP1State(prev => ({ ...prev, submitted: true, score: pct, points: pts }))
     setProgress(50)
-    scormPost('score', { raw: score })
+    scormPost('score', { raw: pct })
   }
 
   // ── Chat functions ────────────────────────────
@@ -116,6 +117,7 @@ export default function Assignment() {
           messages: [...newMessages, { role: 'assistant', content: charReply.trim() }],
           complete: true,
           score,
+          points: Math.round(score * 0.25),
           feedback
         }))
         setProgress(100)
@@ -141,7 +143,7 @@ export default function Assignment() {
   }
 
   function finalSubmit() {
-    const final = Math.round((p1State.score * 0.5) + (p2State.score * 0.5))
+    const final = (p1State.points ?? 0) + (p2State.points ?? 0)
     scormPost('score', { raw: final })
     scormPost('complete', { passed: final >= 70 })
   }
@@ -157,8 +159,8 @@ export default function Assignment() {
         </div>
         <div className={styles.scoreBadge}>
           {p1State.submitted
-            ? `P1: ${p1State.score}%${p2State.complete ? `  ·  P2: ${p2State.score}%` : ''}`
-            : '—'
+            ? `P1: ${p1State.points ?? 0}/25 pts${p2State.complete ? `  ·  P2: ${p2State.points ?? 0}/25 pts` : ''}`
+            : '50 pts total'
           }
         </div>
       </header>
@@ -176,7 +178,7 @@ export default function Assignment() {
         >
           Part 1 — Knowledge Check
           <span className={styles.tabPill}>
-            {p1State.submitted ? `${p1State.score}%` : 'Quiz'}
+            {p1State.submitted ? `${p1State.points ?? 0}/25` : 'Quiz'}
           </span>
         </button>
         <button
@@ -185,7 +187,7 @@ export default function Assignment() {
         >
           Part 2 — Scenario
           <span className={styles.tabPill}>
-            {p2State.complete ? `${p2State.score}%` : 'Live'}
+            {p2State.complete ? `${p2State.points ?? 0}/25` : 'Live'}
           </span>
         </button>
       </nav>
@@ -266,8 +268,8 @@ export default function Assignment() {
 
             {p1State.submitted && (
               <div className={styles.resultsCard}>
-                <div className={styles.resultScore}>{p1State.score}%</div>
-                <div className={styles.resultLabel}>Part 1 Score</div>
+                <div className={styles.resultScore}>{p1State.points ?? 0}/25</div>
+                <div className={styles.resultLabel}>Part 1 Points</div>
                 <div className={styles.resultBar}>
                   <div className={styles.resultBarFill} style={{ width: `${p1State.score}%` }} />
                 </div>
@@ -354,7 +356,7 @@ export default function Assignment() {
                 <h3 className={styles.completeTitle}>Scenario Complete</h3>
                 <p className={styles.completeFeedback}>{p2State.feedback}</p>
                 <div className={styles.completeScore}>
-                  P1: {p1State.score}% &nbsp;·&nbsp; P2: {p2State.score}%
+                  P1: {p1State.points ?? 0}/25 &nbsp;·&nbsp; P2: {p2State.points ?? 0}/25 &nbsp;·&nbsp; Total: {(p1State.points ?? 0) + (p2State.points ?? 0)}/50
                   &nbsp;·&nbsp; Final: {Math.round((p1State.score + p2State.score) / 2)}%
                 </div>
                 <button className="btn btn-success" onClick={finalSubmit}>
