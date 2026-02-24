@@ -352,3 +352,172 @@
   border: 1px dashed var(--border);
   border-radius: var(--radius);
 }
+
+/* ── AI Editor Panel ─────────────────────────── */
+.editorBody {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - 56px);
+}
+
+.editorMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.aiActive {
+  background: var(--primary) !important;
+  color: white !important;
+}
+
+.aiPanel {
+  width: 360px;
+  min-width: 320px;
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.aiPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--primary);
+}
+
+.aiClose {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.aiClose:hover { background: var(--border); }
+
+.aiPanelHint {
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  line-height: 1.5;
+}
+
+.aiSuggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.aiSuggestion {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.15s;
+}
+.aiSuggestion:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.aiMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.aiEmpty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 24px 12px;
+  line-height: 1.6;
+}
+
+.aiMessage {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 90%;
+}
+
+.aiUser {
+  background: var(--primary);
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 3px;
+}
+
+.aiAssistant {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  align-self: flex-start;
+  border-bottom-left-radius: 3px;
+}
+
+.aiError {
+  background: #fff0f0;
+  border-color: #ffcccc;
+  color: #cc0000;
+}
+
+.aiTyping {
+  color: var(--primary);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.aiInputRow {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  align-items: flex-end;
+}
+
+.aiInput {
+  flex: 1;
+  resize: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.4;
+}
+.aiInput:focus { outline: none; border-color: var(--primary); }
+
+.aiSend {
+  padding: 8px 14px !important;
+  font-size: 16px !important;
+  height: fit-content;
+}
