@@ -206,7 +206,7 @@
 }
 .chatAi .chatAvatar  { background: rgba(79,209,197,.12); color: var(--accent2); border: 1px solid rgba(79,209,197,.25); }
 .chatUser .chatAvatar { background: rgba(232,197,71,.12); color: var(--accent);  border: 1px solid rgba(232,197,71,.25); }
-.chatBubble { padding: 9px 13px; border-radius: 10px; font-size: 14px; line-height: 1.6; }
+.chatBubble { padding: 9px 13px; border-radius: 10px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
 .chatAi .chatBubble  { background: var(--surface2); border: 1px solid var(--border); border-top-left-radius: 2px; }
 .chatUser .chatBubble { background: rgba(232,197,71,.09); border: 1px solid rgba(232,197,71,.22); border-top-right-radius: 2px; }
 .typing { display: flex; gap: 3px; padding: 3px 0; }
@@ -249,3 +249,266 @@
 .loadLogo span { color: var(--accent); }
 .loadSpinner { width: 30px; height: 30px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg) } }
+
+
+/* ═══════════════════════════════════════════════════
+   TRANSCRIPT VIEWER — chat-style message bubbles
+   ═══════════════════════════════════════════════════ */
+
+.transcriptContainer {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* ── Transcript Header ── */
+.transcriptHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #1a1e2e, #252a3a);
+  color: #f0f2f5;
+}
+.transcriptHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.transcriptIcon { font-size: 1.3rem; }
+.transcriptTitle {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+.transcriptSub {
+  font-size: 11px;
+  color: #8892a4;
+  margin-top: 1px;
+}
+.stepToggle {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: #e2e6ed;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.stepToggle:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.35);
+}
+
+/* ── Legend ── */
+.transcriptLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 11px 20px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.legendLabel {
+  white-space: nowrap;
+}
+
+/* ── Messages Area ── */
+.transcriptMessages {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 560px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.transcriptMessages::-webkit-scrollbar { width: 5px; }
+.transcriptMessages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Time Badge ── */
+.timeBadge {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 4px;
+}
+.timeBadge span {
+  background: var(--surface2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 12px;
+  border-radius: 10px;
+}
+
+/* ── Message Row ── */
+.tMsgRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 88%;
+  animation: msgIn 0.2s ease;
+}
+.tMsgRowRight {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+/* ── Transcript Avatar ── */
+.tAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+  margin-top: 17px;
+  letter-spacing: 0.02em;
+  font-family: var(--font-mono);
+}
+
+/* ── Bubble ── */
+.tBubbleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tSpeakerName {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding-left: 4px;
+  font-family: var(--font-mono);
+}
+.tBubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  word-break: break-word;
+}
+.tBubbleRight {
+  border-radius: 12px;
+}
+
+/* ── Stage Direction ── */
+.tStageDir {
+  display: block;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--muted);
+  margin-bottom: 3px;
+  opacity: 0.8;
+}
+
+/* ── Step Controls ── */
+.stepControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+}
+.stepNextBtn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #0a0c10;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-family: var(--font-mono);
+}
+.stepNextBtn:hover { opacity: 0.85; }
+.stepCount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.stepDone {
+  font-size: 13px;
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* ── Analysis Questions Card ── */
+.analysisPrompt {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent2);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+.analysisTitle {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: var(--accent2);
+  margin-bottom: 8px;
+}
+.analysisIntro {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.analysisQuestions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.analysisQ {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text);
+  padding: 12px 14px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.analysisQ strong {
+  color: var(--accent2);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .transcriptLegend { gap: 6px 12px; padding: 9px 14px; }
+  .legendItem { font-size: 10px; }
+  .tMsgRow { max-width: 95%; }
+  .tAvatar { width: 26px; height: 26px; font-size: 9px; }
+  .tBubble { font-size: 13px; padding: 8px 11px; }
+  .transcriptSub { display: none; }
+  .analysisPrompt { padding: 16px 18px; }
+}
