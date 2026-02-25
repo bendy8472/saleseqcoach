@@ -293,7 +293,6 @@ export default function Assignment() {
     const pts = Math.round((correct / qCount) * 25)
     setP1State(prev => ({ ...prev, submitted: true, score: pct, points: pts }))
     setProgress(50)
-    scormPost('score', { raw: pct })
   }
 
   // ── Chat functions ────────────────────────────
@@ -345,6 +344,11 @@ export default function Assignment() {
           feedback: evalResult.feedback,
         }))
         setProgress(100)
+
+        // Auto-submit SCORM score
+        const finalPts = (p1State.points ?? 0) + evalResult.points
+        scormPost('score', { raw: finalPts, max: 50 })
+        scormPost('complete', { passed: finalPts >= 35 })
       } else {
         setP2State(prev => ({
           ...prev,
