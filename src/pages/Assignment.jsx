@@ -312,7 +312,6 @@ export default function Assignment() {
     setAiThinking(true)
 
     try {
-      const apiKey = assignment.apiKey || import.meta.env.VITE_ANTHROPIC_KEY
       const messages = isLast
         ? [...newMessages, {
             role: 'user',
@@ -320,13 +319,10 @@ export default function Assignment() {
           }]
         : newMessages
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-calls': 'true',
         },
         body: JSON.stringify({
           model: assignment.apiModel || 'claude-haiku-4-5-20251001',
@@ -379,8 +375,8 @@ export default function Assignment() {
 
   function finalSubmit() {
     const final = (p1State.points ?? 0) + (p2State.points ?? 0)
-    scormPost('score', { raw: final })
-    scormPost('complete', { passed: final >= 70 })
+    scormPost('score', { raw: final, max: 50 })
+    scormPost('complete', { passed: final >= 35 })
   }
 
   // ── Render ────────────────────────────────────
@@ -605,7 +601,7 @@ export default function Assignment() {
                 <p className={styles.completeFeedback}>{p2State.feedback}</p>
                 <div className={styles.completeScore}>
                   P1: {p1State.points ?? 0}/25 &nbsp;·&nbsp; P2: {p2State.points ?? 0}/25 &nbsp;·&nbsp; Total: {(p1State.points ?? 0) + (p2State.points ?? 0)}/50
-                  &nbsp;·&nbsp; Final: {Math.round((p1State.score + p2State.score) / 2)}%
+                  &nbsp;·&nbsp; Final: {(p1State.points ?? 0) + (p2State.points ?? 0)}/50
                 </div>
                 <button className="btn btn-success" onClick={finalSubmit}>
                   Submit to Canvas ✓
