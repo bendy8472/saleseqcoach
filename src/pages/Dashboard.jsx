@@ -54,7 +54,10 @@ export default function Dashboard() {
       {showImport && <ImportModal onClose={() => setShowImport(false)} onImport={load} />}
 
       <aside className={styles.sidebar}>
-        <div className={styles.logo}><span className={styles.logoAccent}>Sales</span> EQ<div className={styles.logoSub}>Coach Dashboard</div></div>
+        <div className={styles.logoWrap}>
+          <img src="/logo.png" alt="Sales EQ Coach" className={styles.logoImg} />
+          <div className={styles.logoSub}>Dashboard</div>
+        </div>
         <nav className={styles.sideNav}>
           <a className={`${styles.navItem} ${styles.navActive}`}><span>⬡</span> Assignments</a>
           <a className={styles.navItem} onClick={() => window.open('/', '_blank')}><span>↗</span> Live Site</a>

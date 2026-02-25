@@ -15,14 +15,16 @@
   gap: 32px;
 }
 
-.logo {
-  font-family: var(--font-display);
-  font-size: 26px;
-  letter-spacing: 0.08em;
-  line-height: 1;
+.logoWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.logoAccent { color: var(--accent); }
+.logoImg {
+  height: 44px;
+  width: auto;
+}
 
 .logoSub {
   font-family: var(--font-mono);
@@ -30,7 +32,6 @@
   color: var(--muted);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-top: 5px;
   font-weight: 400;
 }
 
@@ -57,7 +58,7 @@
 
 .navActive {
   color: var(--accent) !important;
-  background: rgba(232,197,71,0.08) !important;
+  background: rgba(99,163,190,0.08) !important;
 }
 
 .sideStats {
@@ -171,8 +172,8 @@
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--accent2);
-  background: rgba(79,209,197,0.08);
-  border: 1px solid rgba(79,209,197,0.2);
+  background: rgba(61,138,138,0.08);
+  border: 1px solid rgba(61,138,138,0.2);
   border-radius: 20px;
   padding: 3px 10px;
 }

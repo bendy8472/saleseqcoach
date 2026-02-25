@@ -439,9 +439,12 @@ Respond with ONLY a JSON object, no other text:
     <div className={styles.app}>
       {/* Header */}
       <header className={styles.header}>
-        <div>
-          <div className={styles.courseLabel}>Professional Sales · {chapterLabel}</div>
-          <div className={styles.assignTitle}>{title}</div>
+        <div className={styles.headerLeft}>
+          <img src="/logo.png" alt="Sales EQ Coach" className={styles.headerLogo} />
+          <div>
+            <div className={styles.courseLabel}>Professional Sales · {chapterLabel}</div>
+            <div className={styles.assignTitle}>{title}</div>
+          </div>
         </div>
         <div className={styles.scoreBadge}>
           {p1State.submitted
@@ -673,7 +676,7 @@ Respond with ONLY a JSON object, no other text:
 function LoadingScreen() {
   return (
     <div className={styles.loadScreen}>
-      <div className={styles.loadLogo}>Sales <span>EQ</span></div>
+      <img src="/logo.png" alt="Sales EQ Coach" className={styles.loadLogoImg} />
       <div className={styles.loadSpinner} />
     </div>
   )

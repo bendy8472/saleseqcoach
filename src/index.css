@@ -6,13 +6,13 @@
   --surface2: #1a1e28;
   --surface3: #222736;
   --border:   #2c3145;
-  --accent:   #e8c547;
-  --accent2:  #4fd1c5;
+  --accent:   #63a3be;
+  --accent2:  #3d8a8a;
   --danger:   #f56565;
   --success:  #68d391;
   --text:     #eef0f5;
   --muted:    #6b7494;
-  --radius:   10px;
+  --radius:   8px;
   --trans:    0.18s ease;
   --font-display: 'Bebas Neue', sans-serif;
   --font-body:    'DM Sans', sans-serif;
@@ -25,7 +25,7 @@ html, body, #root {
   color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -39,12 +39,12 @@ button { cursor: pointer; font-family: var(--font-body); }
 
 textarea, input, select {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text);
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 7px;
+  padding: 8px 12px;
   outline: none;
   transition: border-color var(--trans);
   width: 100%;
@@ -62,26 +62,26 @@ select option { background: var(--surface2); }
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 20px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 7px;
   border: none;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
   transition: all var(--trans);
   white-space: nowrap;
 }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-primary  { background: var(--accent); color: #0a0c10; }
-.btn-primary:hover:not(:disabled) { background: #f0d060; transform: translateY(-1px); }
+.btn-primary  { background: var(--accent); color: #ffffff; }
+.btn-primary:hover:not(:disabled) { background: #7ab5cc; transform: translateY(-1px); }
 .btn-ghost    { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .btn-danger   { background: rgba(245,101,101,0.12); color: var(--danger); border: 1px solid rgba(245,101,101,0.3); }
 .btn-danger:hover:not(:disabled) { background: rgba(245,101,101,0.2); }
 .btn-success  { background: var(--success); color: #0a0c10; }
 .btn-success:hover:not(:disabled) { background: #9ae6b4; }
-.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-sm { padding: 5px 12px; font-size: 11px; }
 
 /* ── Form label ── */
 .field-label {
