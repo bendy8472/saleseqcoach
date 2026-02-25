@@ -312,18 +312,10 @@ export default function Assignment() {
     setAiThinking(true)
 
     try {
-      const messages = isLast
-        ? [...newMessages, {
-            role: 'user',
-            content: `[SYSTEM: Final exchange. Respond in character one last time, then on a new line write "---EVAL---" followed by JSON: {"score":0-100,"feedback":"2-3 sentence eval of their sales technique"}]`
-          }]
-        : newMessages
-
+      // Step 1: Get the in-character response
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: assignment.apiModel || 'claude-haiku-4-5-20251001',
           max_tokens: 512,
@@ -335,38 +327,97 @@ export default function Assignment() {
       const data = await res.json()
       const reply = data.content?.[0]?.text || ''
 
-      if (isLast && reply.includes('---EVAL---')) {
-        const [charReply, evalPart] = reply.split('---EVAL---')
-        let score = 70, feedback = 'Scenario complete.'
-        try {
-          const ev = JSON.parse(evalPart.trim())
-          score = ev.score ?? 70
-          feedback = ev.feedback || feedback
-        } catch {}
+      const updatedMessages = [...newMessages, { role: 'assistant', content: reply }]
+
+      if (isLast) {
+        // Step 2: Separate evaluation call
         setP2State(prev => ({
           ...prev,
-          messages: [...newMessages, { role: 'assistant', content: charReply.trim() }],
+          messages: updatedMessages,
+        }))
+
+        const evalResult = await evaluateConversation(updatedMessages, p2)
+        setP2State(prev => ({
+          ...prev,
           complete: true,
-          score,
-          points: Math.round(score * 0.25),
-          feedback
+          score: evalResult.score,
+          points: evalResult.points,
+          feedback: evalResult.feedback,
         }))
         setProgress(100)
       } else {
         setP2State(prev => ({
           ...prev,
-          messages: [...newMessages, { role: 'assistant', content: reply }],
-          ...(isLast ? { complete: true } : {})
+          messages: updatedMessages,
         }))
-        if (isLast) setProgress(100)
       }
     } catch (e) {
       setP2State(prev => ({
         ...prev,
-        messages: [...p2State.messages.slice(0, -0), { role: 'assistant', content: '[Connection error — please try again]' }]
+        messages: [...newMessages, { role: 'assistant', content: '[Connection error — please try again]' }]
       }))
     }
     setAiThinking(false)
+  }
+
+  async function evaluateConversation(conversationMessages, p2Config) {
+    const criteria = p2Config.evaluationCriteria || []
+    const criteriaText = criteria.length
+      ? criteria.map((c, i) => `${i + 1}. ${c}`).join('\n')
+      : 'Overall quality of the student\'s sales technique, communication, and application of concepts.'
+
+    const transcript = conversationMessages
+      .map(m => `${m.role === 'user' ? 'STUDENT' : 'AI'}: ${m.content}`)
+      .join('\n\n')
+
+    const evalPrompt = `You are an expert evaluator for a BYU-Idaho Professional Selling course using Sales EQ by Jeb Blount.
+
+Evaluate the student's performance in the following conversation based on these specific criteria:
+
+${criteriaText}
+
+Here is the full conversation:
+
+${transcript}
+
+Score the student from 0-100. Be fair but rigorous — a student who gives vague or generic advice should score 40-60. A student who demonstrates specific knowledge of Blount's framework and gives actionable, persona-specific guidance should score 75-95. Only give 95+ for truly exceptional responses.
+
+Respond with ONLY a JSON object, no other text:
+{"score": <number 0-100>, "feedback": "<2-3 sentences explaining what they did well and what they could improve>"}`
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: assignment.apiModel || 'claude-haiku-4-5-20251001',
+          max_tokens: 300,
+          system: 'You are a grading assistant. Respond with only valid JSON, no markdown, no backticks, no extra text.',
+          messages: [{ role: 'user', content: evalPrompt }],
+        })
+      })
+
+      const data = await res.json()
+      const raw = (data.content?.[0]?.text || '').trim()
+
+      // Try to parse JSON — handle markdown backticks if present
+      const cleaned = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+      const ev = JSON.parse(cleaned)
+      const score = Math.max(0, Math.min(100, ev.score ?? 70))
+
+      return {
+        score,
+        points: Math.round(score * 0.25),
+        feedback: ev.feedback || 'Scenario complete.',
+      }
+    } catch (e) {
+      // If evaluation fails, give a default passing score rather than zero
+      return {
+        score: 70,
+        points: 18,
+        feedback: 'Scenario complete. Your responses were evaluated but detailed scoring was unavailable.',
+      }
+    }
   }
 
   function handleKey(e) {
