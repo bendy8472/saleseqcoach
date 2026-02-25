@@ -24,7 +24,7 @@
   min-width: 0;
 }
 .headerLogo {
-  height: 28px;
+  height: 42px;
   width: auto;
   flex-shrink: 0;
 }
@@ -220,6 +220,10 @@
 }
 .chatAi .chatAvatar  { background: rgba(61,138,138,.12); color: var(--accent2); border: 1px solid rgba(61,138,138,.25); }
 .chatUser .chatAvatar { background: rgba(99,163,190,.12); color: var(--accent);  border: 1px solid rgba(99,163,190,.25); }
+.chatAvatarImg {
+  width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+  border: 1px solid rgba(61,138,138,.25);
+}
 .chatBubble { padding: 7px 10px; border-radius: 10px; font-size: 12px; line-height: 1.5; white-space: pre-wrap; }
 .chatAi .chatBubble  { background: var(--surface2); border: 1px solid var(--border); border-top-left-radius: 2px; }
 .chatUser .chatBubble { background: rgba(99,163,190,.09); border: 1px solid rgba(99,163,190,.22); border-top-right-radius: 2px; }
@@ -261,7 +265,7 @@
 .loadScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 14px; }
 .loadLogo { font-family: var(--font-display); font-size: 36px; letter-spacing: .1em; }
 .loadLogo span { color: var(--accent); }
-.loadLogoImg { height: 50px; width: auto; }
+.loadLogoImg { height: 80px; width: auto; }
 .loadSpinner { width: 26px; height: 26px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg) } }
 
@@ -317,6 +321,7 @@
 }
 .legendItem { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted); }
 .legendDot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.legendPhoto { width: 16px; height: 16px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 .legendLabel { white-space: nowrap; }
 
 .transcriptMessages {
@@ -348,6 +353,11 @@
   font-size: 9px; font-weight: 700; color: #ffffff;
   flex-shrink: 0; margin-top: 15px;
   letter-spacing: 0.02em; font-family: var(--font-mono);
+}
+.tAvatarImg {
+  width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+  flex-shrink: 0; margin-top: 15px;
+  border: 2px solid transparent;
 }
 
 .tBubbleWrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

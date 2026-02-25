@@ -11,7 +11,11 @@ function scormPost(type, data = {}) {
 // ── Transcript Parser & Viewer ──────────────────
 // Detects if a message contains a meeting transcript and renders it as chat bubbles
 
-const SPEAKER_CONFIG = {
+// Character config — built from assignment JSON `p2.characters` array
+// Each character: { name, role, initials, color, bg, photo?, align? }
+// Falls back to hardcoded ch20 config if no characters defined
+
+const DEFAULT_SPEAKERS = {
   'Jordan':   { initials: 'JH', color: '#3b82f6', bg: '#eff6ff',  label: 'Jordan Hess — MedBridge Sales Rep', align: 'right' },
   'Dr. Osei': { initials: 'PO', color: '#ef4444', bg: '#fef2f2',  label: 'Dr. Patricia Osei — Chief of Surgery', align: 'left' },
   'Marcus':   { initials: 'MT', color: '#f59e0b', bg: '#fffbeb',  label: 'Marcus Tran — VP of Operations', align: 'left' },
@@ -19,11 +23,28 @@ const SPEAKER_CONFIG = {
   'Elliot':   { initials: 'EF', color: '#8b5cf6', bg: '#f5f3ff',  label: 'Elliot Forde — Director of Finance', align: 'left' },
 }
 
-function getSpeakerConfig(name) {
-  for (const key of Object.keys(SPEAKER_CONFIG)) {
-    if (name.includes(key)) return SPEAKER_CONFIG[key]
+function buildSpeakerMap(characters) {
+  if (!characters || !characters.length) return null
+  const map = {}
+  characters.forEach(c => {
+    map[c.name] = {
+      initials: c.initials || c.name.slice(0,2).toUpperCase(),
+      color: c.color || '#6b7280',
+      bg: c.bg || '#f9fafb',
+      label: c.role ? `${c.name} — ${c.role}` : c.name,
+      align: c.align || 'left',
+      photo: c.photo || null,
+    }
+  })
+  return map
+}
+
+function getSpeakerConfig(name, speakerMap) {
+  const map = speakerMap || DEFAULT_SPEAKERS
+  for (const key of Object.keys(map)) {
+    if (name.includes(key)) return map[key]
   }
-  return { initials: name.slice(0,2).toUpperCase(), color: '#6b7280', bg: '#f9fafb', label: name, align: 'left' }
+  return { initials: name.slice(0,2).toUpperCase(), color: '#6b7280', bg: '#f9fafb', label: name, align: 'left', photo: null }
 }
 
 function parseTranscript(text) {
@@ -72,7 +93,7 @@ function splitTranscriptAndQuestions(text) {
   }
 }
 
-function TranscriptViewer({ messages }) {
+function TranscriptViewer({ messages, speakerMap }) {
   const [stepMode, setStepMode] = useState(false)
   const [revealCount, setRevealCount] = useState(messages.length)
   const areaRef = useRef(null)
@@ -105,7 +126,7 @@ function TranscriptViewer({ messages }) {
   for (const msg of messages) {
     if (!seen.has(msg.speaker)) {
       seen.add(msg.speaker)
-      speakers.push({ name: msg.speaker, ...getSpeakerConfig(msg.speaker) })
+      speakers.push({ name: msg.speaker, ...getSpeakerConfig(msg.speaker, speakerMap) })
     }
   }
 
@@ -137,7 +158,10 @@ function TranscriptViewer({ messages }) {
       <div className={styles.transcriptLegend}>
         {speakers.map(s => (
           <div key={s.name} className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ backgroundColor: s.color }} />
+            {s.photo
+              ? <img src={s.photo} alt="" className={styles.legendPhoto} />
+              : <span className={styles.legendDot} style={{ backgroundColor: s.color }} />
+            }
             <span className={styles.legendLabel}>{s.label}</span>
           </div>
         ))}
@@ -146,10 +170,14 @@ function TranscriptViewer({ messages }) {
       {/* Messages */}
       <div className={styles.transcriptMessages} ref={areaRef}>
         {visible.map((msg, i) => {
-          const cfg = getSpeakerConfig(msg.speaker)
+          const cfg = getSpeakerConfig(msg.speaker, speakerMap)
           const isRight = cfg.align === 'right'
           let showTime = false
           if (msg.time && msg.time !== lastTime) { showTime = true; lastTime = msg.time }
+
+          const avatar = cfg.photo
+            ? <img src={cfg.photo} alt="" className={styles.tAvatarImg} style={{ borderColor: cfg.color + '60' }} title={cfg.label} />
+            : <div className={styles.tAvatar} style={{ backgroundColor: cfg.color }} title={cfg.label}>{cfg.initials}</div>
 
           return (
             <div key={i}>
@@ -157,11 +185,7 @@ function TranscriptViewer({ messages }) {
                 <div className={styles.timeBadge}><span>{msg.time}</span></div>
               )}
               <div className={`${styles.tMsgRow} ${isRight ? styles.tMsgRowRight : ''}`}>
-                {!isRight && (
-                  <div className={styles.tAvatar} style={{ backgroundColor: cfg.color }} title={cfg.label}>
-                    {cfg.initials}
-                  </div>
-                )}
+                {!isRight && avatar}
                 <div className={styles.tBubbleWrap}>
                   <div className={styles.tSpeakerName} style={{ color: cfg.color }}>
                     {msg.speaker}
@@ -178,11 +202,7 @@ function TranscriptViewer({ messages }) {
                     {msg.text}
                   </div>
                 </div>
-                {isRight && (
-                  <div className={styles.tAvatar} style={{ backgroundColor: cfg.color }} title={cfg.label}>
-                    {cfg.initials}
-                  </div>
-                )}
+                {isRight && avatar}
               </div>
             </div>
           )
@@ -278,6 +298,11 @@ export default function Assignment() {
   const parsedTranscript = parseTranscript(openingContent)
   const hasTranscript = parsedTranscript !== null
   const { questions: analysisQuestionsText } = hasTranscript ? splitTranscriptAndQuestions(openingContent) : { questions: null }
+
+  // Build character/speaker map from assignment JSON
+  const speakerMap = buildSpeakerMap(p2?.characters)
+  // Get AI character config for chat avatar
+  const aiChar = p2?.characters?.find(c => c.align === 'ai' || c.isAi) || null
 
   // ── Quiz functions ────────────────────────────
   function selectAnswer(qId, optIdx, correctIdx) {
@@ -593,7 +618,7 @@ Respond with ONLY a JSON object, no other text:
             {/* Transcript-style opening (ch20 diagnostic format) */}
             {hasTranscript && (
               <>
-                <TranscriptViewer messages={parsedTranscript} />
+                <TranscriptViewer messages={parsedTranscript} speakerMap={speakerMap} />
                 <AnalysisQuestions text={analysisQuestionsText} />
               </>
             )}
@@ -604,18 +629,26 @@ Respond with ONLY a JSON object, no other text:
                 // Skip the opening message if we already rendered it as a transcript
                 if (i === 0 && hasTranscript && msg.role === 'assistant') return null
 
+                const isUser = msg.role === 'user'
                 return (
-                  <div key={i} className={`${styles.chatMsg} ${msg.role === 'user' ? styles.chatUser : styles.chatAi}`}>
-                    <div className={styles.chatAvatar}>
-                      {msg.role === 'user' ? 'YOU' : (p2?.aiAvatarLabel || 'AI')}
-                    </div>
+                  <div key={i} className={`${styles.chatMsg} ${isUser ? styles.chatUser : styles.chatAi}`}>
+                    {isUser ? (
+                      <div className={styles.chatAvatar}>YOU</div>
+                    ) : aiChar?.photo ? (
+                      <img src={aiChar.photo} alt="" className={styles.chatAvatarImg} />
+                    ) : (
+                      <div className={styles.chatAvatar}>{p2?.aiAvatarLabel || 'AI'}</div>
+                    )}
                     <div className={styles.chatBubble}>{msg.content}</div>
                   </div>
                 )
               })}
               {aiThinking && (
                 <div className={`${styles.chatMsg} ${styles.chatAi}`}>
-                  <div className={styles.chatAvatar}>{p2?.aiAvatarLabel || 'AI'}</div>
+                  {aiChar?.photo
+                    ? <img src={aiChar.photo} alt="" className={styles.chatAvatarImg} />
+                    : <div className={styles.chatAvatar}>{p2?.aiAvatarLabel || 'AI'}</div>
+                  }
                   <div className={styles.chatBubble}>
                     <div className={styles.typing}>
                       <div className={styles.typingDot} />
