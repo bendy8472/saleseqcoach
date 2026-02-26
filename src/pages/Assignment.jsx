@@ -264,6 +264,7 @@ export default function Assignment() {
   const [activeTab, setActiveTab] = useState('p1')
   const [p1State, setP1State] = useState({ answers: {}, submitted: false, score: 0 })
   const [p2State, setP2State] = useState({ messages: [], turns: 0, complete: false, score: 0, feedback: '' })
+  const [finalSubmitted, setFinalSubmitted] = useState(false)
   const [inputText, setInputText] = useState('')
   const [aiThinking, setAiThinking] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -454,9 +455,7 @@ Respond with ONLY a JSON object, no other text:
   }
 
   function finalSubmit() {
-    const final = (p1State.points ?? 0) + (p2State.points ?? 0)
-    scormPost('score', { raw: final, max: 50 })
-    scormPost('complete', { passed: final >= 35 })
+    setFinalSubmitted(true)
   }
 
   // ── Render ────────────────────────────────────
@@ -694,8 +693,13 @@ Respond with ONLY a JSON object, no other text:
                   P1: {p1State.points ?? 0}/25 &nbsp;·&nbsp; P2: {p2State.points ?? 0}/25 &nbsp;·&nbsp; Total: {(p1State.points ?? 0) + (p2State.points ?? 0)}/50
                   &nbsp;·&nbsp; Final: {(p1State.points ?? 0) + (p2State.points ?? 0)}/50
                 </div>
-                <button className="btn btn-success" onClick={finalSubmit}>
-                  Submit to Canvas ✓
+                <button
+                  className={`btn ${finalSubmitted ? 'btn-outline' : 'btn-success'}`}
+                  onClick={finalSubmit}
+                  disabled={finalSubmitted}
+                  style={finalSubmitted ? { opacity: 0.85, cursor: 'default' } : {}}
+                >
+                  {finalSubmitted ? '✓ Submitted to Canvas' : 'Submit to Canvas ✓'}
                 </button>
               </div>
             )}
