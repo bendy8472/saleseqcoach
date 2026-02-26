@@ -1,0 +1,109 @@
+{
+  "slug": "ch6",
+  "title": "Shaping Win Probability",
+  "chapterLabel": "Chapter 6",
+  "status": "published",
+  "p1": {
+    "title": "Knowledge Check",
+    "description": "Five questions on Blount's win probability framework — the slot machine analogy, the five levers, and why UHPs play the odds differently than average reps.",
+    "chapterLabel": "Chapter 6",
+    "questions": [
+      {
+        "id": "q1",
+        "text": "Blount describes two identical slot machines with signs reading 93 and 33. What is the core lesson of this analogy for sales?",
+        "options": [
+          "Always choose the prospect willing to pay the most — that's your 93 machine",
+          "UHPs invest their time in high-probability opportunities rather than gambling equally on every deal",
+          "You should only pursue deals with a 90%+ chance of closing",
+          "Win probability is fixed once a deal enters your pipeline — pick the right ones and stop adjusting"
+        ],
+        "correct": 1,
+        "feedback": {
+          "correct": "Correct! The slot machine analogy illustrates that UHPs consistently choose to invest time where win probability is highest — they play the odds rather than treating every deal the same.",
+          "incorrect": "Not quite. The analogy isn't about price or rigid thresholds. It's about the discipline of investing time in high-probability opportunities rather than gambling on every deal equally."
+        }
+      },
+      {
+        "id": "q2",
+        "text": "Becky has 30 prospects in her pipeline with a 10% closing ratio. She closes one deal. According to Blount's Law of Replacement, how many prospects remain?",
+        "options": [
+          "29 — she just closed one deal",
+          "27 — she loses the closed deal plus two that went cold",
+          "20 — statistically, 9 other prospects also became non-viable",
+          "25 — she needs to assume half of the remaining deals are dead"
+        ],
+        "correct": 2,
+        "feedback": {
+          "correct": "Correct! With a 10% close rate, Becky needs 10 prospects to close 1 deal. When she closes one, the other 9 from that statistical group are no longer viable. 30 - 10 = 20.",
+          "incorrect": "Not quite. Blount's Law of Replacement says that at a 10% close rate, closing one deal means 9 others from that statistical group are no longer viable. 30 minus 10 = 20 remaining."
+        }
+      },
+      {
+        "id": "q3",
+        "text": "Blount identifies five levers UHPs pull to shape win probability. Which of the following is NOT one of those five levers?",
+        "options": [
+          "Fanatical prospecting",
+          "Alignment of the three processes of sales",
+          "Aggressive price negotiation to remove buyer risk",
+          "Sales-specific emotional intelligence and human influence frameworks"
+        ],
+        "correct": 2,
+        "feedback": {
+          "correct": "Correct! Price negotiation is not one of Blount's five levers. The five are: fanatical prospecting, disciplined qualifying, stakeholder mapping, alignment of the three processes, and Sales EQ / human influence frameworks.",
+          "incorrect": "Not quite. Blount's five levers are: fanatical prospecting, disciplined qualifying, stakeholder mapping, alignment of the three processes of sales, and Sales EQ with human influence frameworks. Price negotiation is not among them."
+        }
+      },
+      {
+        "id": "q4",
+        "text": "Blount warns that being '70% through the sales process' does NOT mean you have a 70% win probability. Why does this distinction matter?",
+        "options": [
+          "Because sales process completion measures activity, not the likelihood that the deal will actually close",
+          "Because most deals close in the first 30% of the process anyway",
+          "Because sales managers shouldn't use pipeline stages for forecasting",
+          "Because win probability can only be measured after the final presentation"
+        ],
+        "correct": 0,
+        "feedback": {
+          "correct": "Correct! Process completion measures how far you've progressed through your steps — not how likely the deal is to close. This confusion is why forecasts built on pipeline stages consistently miss.",
+          "incorrect": "Not quite. The key insight is that pipeline stage measures activity and progress, not probability. A deal can be 90% through the process and still only have a 20% chance of closing."
+        }
+      },
+      {
+        "id": "q5",
+        "text": "According to Blount, what happens when a salesperson's pipeline is empty and they face the 'Universal Law of Need'?",
+        "options": [
+          "They become more motivated and close at a higher rate due to urgency",
+          "They become desperate, which stakeholders sense and repel — lowering win probability further",
+          "They focus exclusively on their best remaining deal, which improves their odds",
+          "They start prospecting more effectively because the pressure clarifies their priorities"
+        ],
+        "correct": 1,
+        "feedback": {
+          "correct": "Correct! The Universal Law of Need states that the more you need something, the less likely you are to get it. Desperate salespeople lose confidence and stakeholders sense it — creating a downward spiral.",
+          "incorrect": "Not quite. Blount is clear that desperation doesn't create motivation — it creates fear, poor decisions, and a neediness that stakeholders naturally repel. The Law of Need says wanting it more makes getting it less likely."
+        }
+      }
+    ]
+  },
+  "p2": {
+    "title": "The Monday Morning Pipeline Review",
+    "description": "You're Becky's new sales manager. She's walking you through her pipeline of 8 deals — but some are dead deals she can't let go of. Help her see reality, apply the Law of Replacement, and focus on high-probability opportunities.",
+    "roleLabel": "Your Role: Becky's Sales Manager",
+    "aiAvatarLabel": "BECKY",
+    "maxTurns": 12,
+    "characters": [
+      {
+        "name": "Becky",
+        "role": "Sales Rep",
+        "initials": "BR",
+        "color": "#3b82f6",
+        "bg": "#eff6ff",
+        "align": "right",
+        "photo": "https://randomuser.me/api/portraits/women/28.jpg",
+        "isAi": true
+      }
+    ],
+    "systemPrompt": "You are Becky Reeves, a mid-level sales rep at a B2B software company. You are in a Monday morning pipeline review with your new sales manager (the student). You've been with the company two years, you work hard, but your numbers have been flat.\n\nIMPORTANT: Keep every response to 2-3 sentences MAX. Be conversational and natural — like a real person talking across a desk. No monologues.\n\nYOUR 8 DEALS (present 2-3 at a time as the conversation flows):\n\n1. Greenfield Manufacturing — $45K. Great first meeting 4 months ago. Champion left 6 weeks ago. New contact says 'revisit next quarter.' You're attached because of sunk time.\n2. Apex Logistics — $28K. Buying window open, budget approved, decision maker engaged, demo Thursday. This is gold.\n3. Meridian Health — $62K. Huge account. 5 meetings over 3 months but never met the decision maker. Your contact Sarah keeps promising an intro but never delivers. No next step scheduled.\n4. TechVault Solutions — $18K. Small but solid. They reached out to you. Budget confirmed, 30-day timeline, decision maker on next call.\n5. Horizon Retail Group — $55K. In pipeline 6 months. Leadership change. New VP 'reevaluating all vendors' but hasn't returned your last two calls.\n6. BluePeak Financial — $35K. Active RFP, shortlist of 3 vendors. Presentation next week. Strong relationships with two of four committee members.\n7. ClearPath Education — $22K. They need your product but locked into competitor contract for 8 more months. No buying window.\n8. Northstar Analytics — $40K. Great discovery, real pain, but budget frozen company-wide. They say 'call back in Q3.'\n\nYOUR PERSONALITY:\n- Hard worker, genuinely cares\n- Defensive when told to drop a deal she's invested in\n- Rationalizes bad deals: 'They haven't said no,' 'It's huge,' 'I've put so much time in'\n- Too blunt from student = she shuts down and gets quiet\n- Empathetic but firm from student = she gradually opens up\n- Too soft from student = she pushes: 'See? Not that bad, right?'\n\nTURN PACING:\n- Turn 1: 'Hey! Ready for our first pipeline review. I've got 8 deals, about $305K total. Want me to walk you through them?' Then present deals 1-3 in 2-3 sentences.\n- Turns 2-4: Present remaining deals based on student's questions. 2-3 sentences each turn.\n- Turns 5-8: Push back emotionally when student identifies weak deals. 'But we had such a great first meeting...' or 'It's $62K — I can't just walk away.'\n- Turns 9-12: If student uses empathy + framework, start coming around. 'Okay, when you put it that way...' Ask for help building a plan.\n\nRULES:\n- NEVER use Blount's terminology (Law of Replacement, win probability, five levers, UHP) — the student must apply those\n- 2-3 sentences per response. Always.\n- If student says 'drop it' without explaining WHY, push back: 'But why? I've worked so hard on it.'\n- After 10-12 exchanges, wrap naturally and signal readiness to make a plan.",
+    "evaluationPrompt": "You are evaluating a student's performance as a sales manager conducting a pipeline review with their rep Becky. The student should demonstrate understanding of Blount's Chapter 6 concepts.\n\nScore the student from 0-100. Be fair but rigorous — a student who gives vague or generic advice should score 40-60. A student who demonstrates specific knowledge of Blount's framework and gives actionable, persona-specific guidance should score 75-95. Only give 95+ for truly exceptional responses.\n\nEVALUATION CRITERIA:\n\n1. PIPELINE ASSESSMENT (25 pts): Did the student correctly identify high-probability deals (Apex, TechVault, BluePeak) vs low-probability ones (Greenfield, Meridian, Horizon, ClearPath)? Did they recognize the difference between pipeline progress and win probability?\n\n2. FRAMEWORK APPLICATION (25 pts): Did the student apply Blount's concepts — Law of Replacement, managing attachment as a disruptive emotion, the five levers, the slot machine analogy, fanatical prospecting? Using specific chapter terminology matters.\n\n3. COACHING APPROACH (25 pts): Did the student balance empathy with firmness? Acknowledge Becky's effort while redirecting to reality? Too harsh (shutting her down) or too soft (letting her keep bad deals) both lose points.\n\n4. ACTIONABLE DIRECTION (25 pts): Did the student help Becky build a plan — which deals to focus on, which to deprioritize, how many new prospects to add, specific next steps?\n\nRespond with JSON: {\"score\": <0-100>, \"feedback\": \"<2-3 sentences>\"}"
+  }
+}
