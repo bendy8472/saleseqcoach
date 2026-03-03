@@ -539,6 +539,8 @@ Respond with ONLY a JSON object, no other text:
     }
     setAiThinking(false)
   }
+
+  function handleKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   }
 
