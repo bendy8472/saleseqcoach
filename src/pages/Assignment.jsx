@@ -268,7 +268,12 @@ export default function Assignment() {
   const [inputText, setInputText] = useState('')
   const [aiThinking, setAiThinking] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [isRecording, setIsRecording] = useState(false)
+  const [inCall, setInCall] = useState(false)
+  const [callTime, setCallTime] = useState(0)
   const chatRef = useRef(null)
+  const recognitionRef = useRef(null)
+  const callTimerRef = useRef(null)
 
   useEffect(() => {
     async function load() {
@@ -323,71 +328,7 @@ export default function Assignment() {
 
   // ── Chat functions ────────────────────────────
   async function sendMessage() {
-    const text = inputText.trim()
-    if (!text || p2State.complete || aiThinking) return
-    const maxTurns = p2?.maxTurns || 12
-    if (p2State.turns >= maxTurns) return
-
-    const newTurns = p2State.turns + 1
-    const isLast = newTurns >= maxTurns
-
-    const newMessages = [...p2State.messages, { role: 'user', content: text }]
-    setP2State(prev => ({ ...prev, messages: newMessages, turns: newTurns }))
-    setInputText('')
-    setAiThinking(true)
-
-    try {
-      // Step 1: Get the in-character response
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: assignment.apiModel || 'claude-haiku-4-5-20251001',
-          max_tokens: 512,
-          system: p2.systemPrompt,
-          messages: newMessages,
-        })
-      })
-
-      const data = await res.json()
-      const reply = data.content?.[0]?.text || ''
-
-      const updatedMessages = [...newMessages, { role: 'assistant', content: reply }]
-
-      if (isLast) {
-        // Step 2: Separate evaluation call
-        setP2State(prev => ({
-          ...prev,
-          messages: updatedMessages,
-        }))
-
-        const evalResult = await evaluateConversation(updatedMessages, p2)
-        setP2State(prev => ({
-          ...prev,
-          complete: true,
-          score: evalResult.score,
-          points: evalResult.points,
-          feedback: evalResult.feedback,
-        }))
-        setProgress(100)
-
-        // Auto-submit SCORM score
-        const finalPts = (p1State.points ?? 0) + evalResult.points
-        scormPost('score', { raw: finalPts, max: 50 })
-        scormPost('complete', { passed: finalPts >= 35 })
-      } else {
-        setP2State(prev => ({
-          ...prev,
-          messages: updatedMessages,
-        }))
-      }
-    } catch (e) {
-      setP2State(prev => ({
-        ...prev,
-        messages: [...newMessages, { role: 'assistant', content: '[Connection error — please try again]' }]
-      }))
-    }
-    setAiThinking(false)
+    await sendMessageWithText(inputText)
   }
 
   async function evaluateConversation(conversationMessages, p2Config) {
@@ -450,7 +391,154 @@ Respond with ONLY a JSON object, no other text:
     }
   }
 
-  function handleKey(e) {
+  // ── Voice functions ────────────────────────────
+  function speakText(text) {
+    if (!text || typeof window === 'undefined') return
+    const synth = window.speechSynthesis
+    synth.cancel()
+    const utter = new SpeechSynthesisUtterance(text)
+    // Pick a voice based on the AI character
+    const voices = synth.getVoices()
+    const aiName = aiChar?.name?.toLowerCase() || ''
+    // Try to match gender from name/role
+    const femaleNames = ['becky','megan','rachel','dana','priya','claire','shell','michelle']
+    const isFemale = femaleNames.some(n => aiName.includes(n))
+    const preferred = voices.find(v => 
+      isFemale ? v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Karen')
+               : v.name.includes('Male') || v.name.includes('Daniel') || v.name.includes('Alex')
+    ) || voices[0]
+    if (preferred) utter.voice = preferred
+    utter.rate = 1.0
+    utter.pitch = isFemale ? 1.1 : 0.9
+    synth.speak(utter)
+  }
+
+  function startRecording() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Speech recognition is not supported in your browser. Please use Chrome.')
+      return
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.lang = 'en-US'
+    
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript
+      if (inCall) {
+        // In call mode, auto-send the message
+        setInputText(transcript)
+        setTimeout(() => {
+          sendMessageWithText(transcript)
+        }, 200)
+      } else {
+        setInputText(prev => prev + transcript)
+      }
+      setIsRecording(false)
+    }
+    recognition.onerror = () => setIsRecording(false)
+    recognition.onend = () => setIsRecording(false)
+    
+    recognitionRef.current = recognition
+    recognition.start()
+    setIsRecording(true)
+  }
+
+  function stopRecording() {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+    }
+    setIsRecording(false)
+  }
+
+  function startCall() {
+    setInCall(true)
+    setCallTime(0)
+    callTimerRef.current = setInterval(() => {
+      setCallTime(t => t + 1)
+    }, 1000)
+    // Start listening immediately
+    setTimeout(() => startRecording(), 500)
+  }
+
+  function endCall() {
+    setInCall(false)
+    if (callTimerRef.current) clearInterval(callTimerRef.current)
+    if (recognitionRef.current) recognitionRef.current.stop()
+    window.speechSynthesis?.cancel()
+    setIsRecording(false)
+  }
+
+  function formatCallTime(seconds) {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  async function sendMessageWithText(text) {
+    if (!text?.trim() || p2State.complete || aiThinking) return
+    const maxTurns = p2?.maxTurns || 12
+    if (p2State.turns >= maxTurns) return
+
+    const newTurns = p2State.turns + 1
+    const isLast = newTurns >= maxTurns
+
+    const newMessages = [...p2State.messages, { role: 'user', content: text.trim() }]
+    setP2State(prev => ({ ...prev, messages: newMessages, turns: newTurns }))
+    setInputText('')
+    setAiThinking(true)
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: assignment.apiModel || 'claude-haiku-4-5-20251001',
+          max_tokens: 512,
+          system: p2.systemPrompt,
+          messages: newMessages,
+        })
+      })
+
+      const data = await res.json()
+      const reply = data.content?.[0]?.text || ''
+      const updatedMessages = [...newMessages, { role: 'assistant', content: reply }]
+
+      if (isLast) {
+        setP2State(prev => ({ ...prev, messages: updatedMessages }))
+        const evalResult = await evaluateConversation(updatedMessages, p2)
+        setP2State(prev => ({
+          ...prev,
+          complete: true,
+          score: evalResult.score,
+          points: evalResult.points,
+          feedback: evalResult.feedback,
+        }))
+        setProgress(100)
+        const finalPts = (p1State.points ?? 0) + evalResult.points
+        scormPost('score', { raw: finalPts, max: 50 })
+        scormPost('complete', { passed: finalPts >= 35 })
+        if (inCall) endCall()
+      } else {
+        setP2State(prev => ({ ...prev, messages: updatedMessages }))
+        // In call mode, speak the reply and start listening again
+        if (inCall) {
+          speakText(reply)
+          const wordCount = reply.split(' ').length
+          setTimeout(() => {
+            if (inCall && !p2State.complete) startRecording()
+          }, Math.max(2000, wordCount * 300))
+        }
+      }
+    } catch (e) {
+      setP2State(prev => ({
+        ...prev,
+        messages: [...newMessages, { role: 'assistant', content: '[Connection error — please try again]' }]
+      }))
+    }
+    setAiThinking(false)
+  }
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   }
 
@@ -594,24 +682,87 @@ Respond with ONLY a JSON object, no other text:
           </div>
         )}
 
-        {/* ── PART 2 ── */}
+        {/* ── PART 2 — iMessage Style ── */}
         {activeTab === 'p2' && (
-          <div>
+          <div className={styles.imessageWrap}>
+            {/* Description card */}
             <div className={styles.introCard}>
               <h2 className={styles.introTitle}>{p2.title}</h2>
               <p className={styles.introDesc}>{p2.description}</p>
               <div className={styles.chips}>
                 <span className={styles.chip}>{p2.roleLabel}</span>
                 <span className={styles.chip}>Max {p2.maxTurns} Exchanges</span>
-                <span className={styles.chip}>AI-Powered</span>
               </div>
             </div>
 
-            {p2.scenarioContext && (
-              <div
-                className={styles.scenarioContext}
-                dangerouslySetInnerHTML={{ __html: p2.scenarioContext }}
-              />
+            {/* iMessage contact header */}
+            <div className={styles.iContactBar}>
+              <div className={styles.iContactInfo}>
+                {aiChar?.photo ? (
+                  <img src={aiChar.photo} alt="" className={styles.iContactPhoto} />
+                ) : (
+                  <div className={styles.iContactAvatar} style={{ backgroundColor: aiChar?.color || '#6b7280' }}>
+                    {aiChar?.initials || 'AI'}
+                  </div>
+                )}
+                <div>
+                  <div className={styles.iContactName}>{aiChar?.name || 'Contact'}</div>
+                  <div className={styles.iContactRole}>{aiChar?.role || ''}</div>
+                </div>
+              </div>
+              {!p2State.complete && (
+                <button
+                  className={`${styles.iCallBtn} ${inCall ? styles.iCallActive : ''}`}
+                  onClick={inCall ? endCall : startCall}
+                  title={inCall ? 'End Call' : 'Start Voice Call'}
+                >
+                  {inCall ? (
+                    <>
+                      <span className={styles.iCallTimer}>{formatCallTime(callTime)}</span>
+                      <span className={styles.iCallEndIcon}>✕</span>
+                    </>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {/* Call overlay */}
+            {inCall && (
+              <div className={styles.iCallOverlay}>
+                {aiChar?.photo ? (
+                  <img src={aiChar.photo} alt="" className={styles.iCallPhoto} />
+                ) : (
+                  <div className={styles.iCallAvatarLg}>{aiChar?.initials || 'AI'}</div>
+                )}
+                <div className={styles.iCallName}>{aiChar?.name || 'Contact'}</div>
+                <div className={styles.iCallStatus}>
+                  {isRecording ? '🎙 Listening...' : aiThinking ? 'Speaking...' : `${formatCallTime(callTime)}`}
+                </div>
+                <div className={styles.iCallActions}>
+                  {!isRecording && !aiThinking && (
+                    <button className={styles.iCallMicBtn} onClick={startRecording}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                      </svg>
+                      Tap to Talk
+                    </button>
+                  )}
+                  {isRecording && (
+                    <div className={styles.iCallRecording}>
+                      <div className={styles.iCallPulse} />
+                      <span>Listening...</span>
+                    </div>
+                  )}
+                </div>
+                <button className={styles.iCallEndBtn} onClick={endCall}>
+                  End Call
+                </button>
+              </div>
             )}
 
             {/* Transcript-style opening (ch20 diagnostic format) */}
@@ -622,33 +773,26 @@ Respond with ONLY a JSON object, no other text:
               </>
             )}
 
-            {/* Chat */}
-            <div className={styles.chatWindow} ref={chatRef}>
+            {/* iMessage chat */}
+            <div className={styles.iChatWindow} ref={chatRef}>
               {p2State.messages.map((msg, i) => {
-                // Skip the opening message if we already rendered it as a transcript
                 if (i === 0 && hasTranscript && msg.role === 'assistant') return null
-
                 const isUser = msg.role === 'user'
                 return (
-                  <div key={i} className={`${styles.chatMsg} ${isUser ? styles.chatUser : styles.chatAi}`}>
-                    {isUser ? (
-                      <div className={styles.chatAvatar}>YOU</div>
-                    ) : aiChar?.photo ? (
-                      <img src={aiChar.photo} alt="" className={styles.chatAvatarImg} />
-                    ) : (
-                      <div className={styles.chatAvatar}>{p2?.aiAvatarLabel || 'AI'}</div>
+                  <div key={i} className={`${styles.iBubbleRow} ${isUser ? styles.iBubbleRowRight : styles.iBubbleRowLeft}`}>
+                    {!isUser && aiChar?.photo && (
+                      <img src={aiChar.photo} alt="" className={styles.iBubbleAvatar} />
                     )}
-                    <div className={styles.chatBubble}>{msg.content}</div>
+                    <div className={`${styles.iBubble} ${isUser ? styles.iBubbleUser : styles.iBubbleAi}`}>
+                      {msg.content}
+                    </div>
                   </div>
                 )
               })}
               {aiThinking && (
-                <div className={`${styles.chatMsg} ${styles.chatAi}`}>
-                  {aiChar?.photo
-                    ? <img src={aiChar.photo} alt="" className={styles.chatAvatarImg} />
-                    : <div className={styles.chatAvatar}>{p2?.aiAvatarLabel || 'AI'}</div>
-                  }
-                  <div className={styles.chatBubble}>
+                <div className={`${styles.iBubbleRow} ${styles.iBubbleRowLeft}`}>
+                  {aiChar?.photo && <img src={aiChar.photo} alt="" className={styles.iBubbleAvatar} />}
+                  <div className={`${styles.iBubble} ${styles.iBubbleAi}`}>
                     <div className={styles.typing}>
                       <div className={styles.typingDot} />
                       <div className={styles.typingDot} />
@@ -663,23 +807,35 @@ Respond with ONLY a JSON object, no other text:
               Exchange {p2State.turns} of {p2.maxTurns}
             </div>
 
-            {!p2State.complete && (
-              <div className={styles.chatInputRow}>
-                <textarea
-                  className={styles.chatInput}
+            {!p2State.complete && !inCall && (
+              <div className={styles.iInputRow}>
+                <button
+                  className={`${styles.iMicBtn} ${isRecording ? styles.iMicActive : ''}`}
+                  onClick={isRecording ? stopRecording : startRecording}
+                  title={isRecording ? 'Stop recording' : 'Voice input'}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                  </svg>
+                </button>
+                <input
+                  type="text"
+                  className={styles.iInput}
                   value={inputText}
                   onChange={e => setInputText(e.target.value)}
                   onKeyDown={handleKey}
-                  placeholder="Type your analysis here…"
-                  disabled={aiThinking || p2State.turns >= p2.maxTurns}
-                  rows={1}
+                  placeholder={isRecording ? 'Listening...' : 'iMessage'}
+                  disabled={aiThinking || p2State.turns >= p2.maxTurns || isRecording}
                 />
                 <button
-                  className="btn btn-primary"
+                  className={styles.iSendBtn}
                   onClick={sendMessage}
                   disabled={aiThinking || !inputText.trim() || p2State.turns >= p2.maxTurns}
                 >
-                  Send
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                  </svg>
                 </button>
               </div>
             )}
@@ -691,7 +847,6 @@ Respond with ONLY a JSON object, no other text:
                 <p className={styles.completeFeedback}>{p2State.feedback}</p>
                 <div className={styles.completeScore}>
                   P1: {p1State.points ?? 0}/25 &nbsp;·&nbsp; P2: {p2State.points ?? 0}/25 &nbsp;·&nbsp; Total: {(p1State.points ?? 0) + (p2State.points ?? 0)}/50
-                  &nbsp;·&nbsp; Final: {(p1State.points ?? 0) + (p2State.points ?? 0)}/50
                 </div>
                 <button
                   className={`btn ${finalSubmitted ? 'btn-outline' : 'btn-success'}`}
