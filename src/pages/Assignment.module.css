@@ -413,13 +413,7 @@
    iMESSAGE STYLE — Part 2 Chat UI
    ═══════════════════════════════════════════════════ */
 
-.imessageWrap {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-/* Contact bar — like the top of an iMessage thread */
+/* Contact bar */
 .iContactBar {
   display: flex;
   align-items: center;
@@ -430,181 +424,21 @@
   border-radius: var(--radius);
   margin-bottom: 8px;
 }
-.iContactInfo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.iContactPhoto {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--border);
-}
+.iContactInfo { display: flex; align-items: center; gap: 10px; }
+.iContactPhoto { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
 .iContactAvatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: #fff;
 }
-.iContactName {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text);
-}
-.iContactRole {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-/* Call button */
-.iCallBtn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  background: #34c759;
-  border: none;
-  border-radius: 20px;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.iCallBtn:hover { background: #2db84e; transform: scale(1.03); }
-.iCallActive {
-  background: #ff3b30 !important;
-  animation: callPulse 2s infinite;
-}
-.iCallTimer {
-  font-family: var(--font-mono);
-  font-size: 11px;
-}
-.iCallEndIcon {
-  font-weight: 700;
-}
-@keyframes callPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255,59,48,0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(255,59,48,0); }
-}
-
-/* Call overlay */
-.iCallOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease;
-}
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.iCallPhoto {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid rgba(255,255,255,0.2);
-}
-.iCallAvatarLg {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 32px;
-  color: #fff;
-  background: rgba(255,255,255,0.1);
-  border: 3px solid rgba(255,255,255,0.2);
-}
-.iCallName {
-  font-family: var(--font-display);
-  font-size: 28px;
-  color: #fff;
-  letter-spacing: 0.03em;
-}
-.iCallStatus {
-  font-size: 14px;
-  color: rgba(255,255,255,0.6);
-  font-family: var(--font-mono);
-}
-.iCallActions {
-  margin-top: 20px;
-}
-.iCallMicBtn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 24px;
-  background: rgba(255,255,255,0.1);
-  border: 2px solid rgba(255,255,255,0.2);
-  border-radius: 50px;
-  color: #fff;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.iCallMicBtn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
-
-.iCallRecording {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  color: #34c759;
-  font-size: 14px;
-  font-weight: 600;
-}
-.iCallPulse {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(52, 199, 89, 0.3);
-  animation: pulsing 1.5s infinite;
-}
-@keyframes pulsing {
-  0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-
-.iCallEndBtn {
-  margin-top: 30px;
-  padding: 14px 40px;
-  background: #ff3b30;
-  border: none;
-  border-radius: 50px;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.iCallEndBtn:hover { background: #e0332b; transform: scale(1.03); }
+.iContactName { font-weight: 600; font-size: 14px; color: var(--text); }
+.iContactRole { font-size: 11px; color: var(--muted); }
 
 /* iMessage chat window */
 .iChatWindow {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 16px;
-  flex: 1;
   min-height: 300px;
   max-height: 400px;
   overflow-y: auto;
@@ -617,7 +451,7 @@
   scrollbar-color: var(--border) transparent;
 }
 
-/* Message bubbles — iMessage style */
+/* Message bubbles */
 .iBubbleRow {
   display: flex;
   align-items: flex-end;
@@ -627,94 +461,30 @@
 }
 .iBubbleRowLeft { align-self: flex-start; }
 .iBubbleRowRight { align-self: flex-end; }
+.iBubbleAvatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.iBubble { padding: 8px 12px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+.iBubbleUser { background: #007aff; color: #fff; border-radius: 18px 18px 4px 18px; }
+.iBubbleAi { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; }
 
-.iBubbleAvatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.iBubble {
-  padding: 8px 12px;
-  font-size: 13px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.iBubbleUser {
-  background: #007aff;
-  color: #fff;
-  border-radius: 18px 18px 4px 18px;
-}
-.iBubbleAi {
-  background: var(--surface2);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 18px 18px 18px 4px;
-}
-
-/* Input row — iMessage style */
+/* Input row */
 .iInputRow {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px;
+  padding: 4px 4px 4px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
   margin-bottom: 12px;
 }
-.iInput {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: var(--text);
-  font-size: 13px;
-  padding: 8px 10px;
-  outline: none;
-}
+.iInput { flex: 1; background: transparent; border: none; color: var(--text); font-size: 13px; padding: 8px 0; outline: none; }
 .iInput::placeholder { color: var(--muted); }
-
-.iMicBtn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(99,163,190,0.1);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.iMicBtn:hover { background: rgba(99,163,190,0.2); }
-.iMicActive {
-  background: #ff3b30 !important;
-  color: #fff !important;
-  animation: micPulse 1s infinite;
-}
-@keyframes micPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
 .iSendBtn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: #007aff;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 50%; border: none;
+  background: #007aff; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; font-weight: 700;
+  transition: all 0.2s; flex-shrink: 0;
 }
 .iSendBtn:hover { background: #0066d6; }
 .iSendBtn:disabled { opacity: 0.3; cursor: default; }
