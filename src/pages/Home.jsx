@@ -3,24 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { fetchAssignments } from '../lib/store'
 import styles from './Home.module.css'
 
-function getTheme() {
-  return localStorage.getItem('saleseq_theme') || 'night'
-}
-
-function setTheme(theme) {
-  localStorage.setItem('saleseq_theme', theme)
-  document.documentElement.setAttribute('data-theme', theme)
-}
-
 export default function Home() {
   const [assignments, setAssignments] = useState([])
   const [loading, setLoading] = useState(true)
-  const [dark, setDark] = useState(() => getTheme() === 'night')
   const nav = useNavigate()
-
-  useEffect(() => {
-    setTheme(dark ? 'night' : 'corporate')
-  }, [dark])
 
   useEffect(() => {
     fetchAssignments().then(data => {
@@ -38,85 +24,58 @@ export default function Home() {
   return (
     <div className={styles.page}>
       {/* Navbar */}
-      <div className="navbar bg-base-200 border-b border-base-300 px-4">
-        <div className="navbar-start">
-          <a href="/" className={styles.navBrand}>
-            <img src="/logo.png" alt="Sales EQ Coach" className={styles.navLogo} />
-            <span className={styles.navTitle}>Sales EQ Coach</span>
-          </a>
-        </div>
-        <div className="navbar-center">
-        </div>
-        <div className="navbar-end gap-1">
-          {/* Theme toggle */}
-          <label className="swap swap-rotate btn btn-ghost btn-sm btn-circle">
-            <input
-              type="checkbox"
-              checked={dark}
-              onChange={() => setDark(d => !d)}
-            />
-            {/* Sun icon (shown when dark — click to go light) */}
-            <svg className="swap-on fill-current w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
-            </svg>
-            {/* Moon icon (shown when light — click to go dark) */}
-            <svg className="swap-off fill-current w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/>
-            </svg>
-          </label>
-          {/* Settings (Dashboard) */}
-          <button className="btn btn-ghost btn-sm gap-1" onClick={() => nav('/dashboard')}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Settings
-          </button>
-        </div>
-      </div>
+      <nav className={styles.navbar}>
+        <a href="/" className={styles.navBrand}>
+          <img src="/logo.png" alt="Sales EQ Coach" className={styles.navLogo} />
+          <span className={styles.navTitle}>Sales EQ Coach</span>
+        </a>
+        <button className={styles.settingsBtn} onClick={() => nav('/dashboard')}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      </nav>
 
-      {/* Hero — logo replaces title */}
+      {/* Hero */}
       <header className={styles.hero}>
-        <img src="/logo.png" alt="Sales EQ Coach" className={styles.heroLogo} />
+        <h1 className={styles.heroTitle}>Sales EQ Coach</h1>
         <p className={styles.heroTagline}>AI-Powered Sales Training</p>
       </header>
 
       {/* Assignment grid */}
       <section className={styles.content}>
         {loading && (
-          <div className="flex justify-center py-20">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
+          <div className={styles.loadingWrap}>
+            <div className={styles.spinner} />
           </div>
         )}
 
         {!loading && assignments.length > 0 && (
           <>
-            <div className={styles.sectionLabel}>Available Assignments</div>
+            <div className={styles.sectionLabel}>Assignments</div>
             <div className={styles.grid}>
               {assignments.map(a => (
-                <div key={a.slug} className={styles.card}>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="badge badge-outline badge-sm" style={{fontFamily:'var(--font-mono)',fontSize:10}}>
-                      {a.chapterLabel}
-                    </span>
-                  </div>
+                <div key={a.slug} className={styles.card} onClick={() => nav(`/${a.slug}`)}>
+                  <div className={styles.cardChip}>{a.chapterLabel}</div>
                   <h2 className={styles.cardTitle}>{a.title}</h2>
                   <div className={styles.cardMeta}>
                     <div className={styles.cardStat}>
                       <span className={styles.cardStatNum}>{a.p1?.questions?.length || 0}</span>
                       <span className={styles.cardStatLabel}>Questions</span>
                     </div>
+                    <div className={styles.cardDivider} />
                     <div className={styles.cardStat}>
                       <span className={styles.cardStatNum}>{a.p2?.maxTurns || '—'}</span>
                       <span className={styles.cardStatLabel}>Turns</span>
                     </div>
                   </div>
-                  <button
-                    className="btn btn-primary btn-sm mt-auto self-start"
-                    onClick={() => nav(`/${a.slug}`)}
-                  >
-                    Start →
-                  </button>
+                  <div className={styles.cardAction}>
+                    Start
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
               ))}
             </div>
@@ -125,15 +84,19 @@ export default function Home() {
 
         {!loading && assignments.length === 0 && (
           <div className={styles.empty}>
-            <div className={styles.emptyIcon}>⬡</div>
-            <p>No assignments available yet.</p>
+            <div className={styles.emptyIcon}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <p className={styles.emptyText}>No assignments available yet.</p>
           </div>
         )}
       </section>
 
       {/* Footer */}
       <footer className={styles.footer}>
-        Sales EQ Coach — AI-Powered Sales Training
+        Sales EQ Coach
       </footer>
     </div>
   )

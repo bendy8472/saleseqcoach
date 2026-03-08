@@ -464,9 +464,10 @@ Respond with ONLY a JSON object, no other text:
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <img src="/logo.png" alt="Sales EQ Coach" className={styles.headerLogo} />
+          <a href="/" className={styles.headerBrand}>Sales EQ</a>
+          <div className={styles.headerDivider} />
           <div>
-            <div className={styles.courseLabel}>Professional Sales · {chapterLabel}</div>
+            <div className={styles.courseLabel}>{chapterLabel}</div>
             <div className={styles.assignTitle}>{title}</div>
           </div>
         </div>
@@ -720,7 +721,7 @@ Respond with ONLY a JSON object, no other text:
 function LoadingScreen() {
   return (
     <div className={styles.loadScreen}>
-      <img src="/logo.png" alt="Sales EQ Coach" className={styles.loadLogoImg} />
+      <div className={styles.loadLogo}>Sales EQ Coach</div>
       <div className={styles.loadSpinner} />
     </div>
   )

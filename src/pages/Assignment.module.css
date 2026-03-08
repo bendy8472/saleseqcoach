@@ -20,12 +20,22 @@
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
-.headerLogo {
-  height: 42px;
-  width: auto;
+.headerBrand {
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.headerDivider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
   flex-shrink: 0;
 }
 .courseLabel {
@@ -263,9 +273,7 @@
 
 /* Loading */
 .loadScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 14px; }
-.loadLogo { font-family: var(--font-display); font-size: 36px; letter-spacing: .1em; }
-.loadLogo span { color: var(--accent); }
-.loadLogoImg { height: 80px; width: auto; }
+.loadLogo { font-family: var(--font-display); font-size: 36px; letter-spacing: .06em; color: var(--text); }
 .loadSpinner { width: 26px; height: 26px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg) } }
 
