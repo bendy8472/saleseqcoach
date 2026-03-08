@@ -6,6 +6,7 @@ import { toast } from '../lib/toast'
 import styles from './Editor.module.css'
 
 const TABS = ['meta', 'part1', 'part2', 'export']
+const EDITOR_PIN = '4321'
 
 export default function Editor() {
   const { slug } = useParams()
@@ -17,6 +18,11 @@ export default function Editor() {
   const [dirty, setDirty] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [downloading, setDownloading] = useState(false)
+
+  // PIN protection
+  const [pinVerified, setPinVerified] = useState(false)
+  const [pinInput, setPinInput] = useState('')
+  const [pinError, setPinError] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -31,7 +37,52 @@ export default function Editor() {
     load()
   }, [slug])
 
-  if (!assignment) return <div className={styles.loading}>Loading…</div>
+  // ── PIN gate ──
+  function handlePinSubmit() {
+    if (pinInput === EDITOR_PIN) {
+      setPinVerified(true)
+      setPinError(false)
+    } else {
+      setPinError(true)
+      setPinInput('')
+    }
+  }
+
+  if (!pinVerified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{background:'var(--bg)'}}>
+        <div className="card bg-base-200 shadow-2xl w-96 border border-base-300">
+          <div className="card-body items-center text-center gap-4">
+            <div className="text-4xl opacity-30">🔒</div>
+            <h2 className="card-title text-xl" style={{fontFamily:'var(--font-display)',letterSpacing:'0.05em'}}>Editor Access</h2>
+            <p className="text-sm opacity-60">Enter your 4-digit PIN to continue</p>
+            <input
+              type="password"
+              maxLength={4}
+              className="input input-bordered w-full max-w-xs text-center text-2xl"
+              style={{letterSpacing:'0.5em',fontFamily:'var(--font-mono)'}}
+              value={pinInput}
+              onChange={e => setPinInput(e.target.value.replace(/\D/g, ''))}
+              onKeyDown={e => e.key === 'Enter' && handlePinSubmit()}
+              autoFocus
+              placeholder="• • • •"
+            />
+            {pinError && <p className="text-error text-sm">Incorrect PIN. Try again.</p>}
+            <div className="card-actions w-full mt-2">
+              <button className="btn btn-primary w-full" onClick={handlePinSubmit} disabled={pinInput.length < 4}>Unlock Editor</button>
+              <button className="btn btn-ghost w-full btn-sm" onClick={() => nav('/')}>← Back to Dashboard</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!assignment) return (
+    <div className="min-h-screen flex items-center justify-center" style={{background:'var(--bg)'}}>
+      <span className="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  )
 
   function update(path, value) {
     setAssignment(prev => {
@@ -43,7 +94,6 @@ export default function Editor() {
   }
 
   async function save() {
-    // Auto-generate slug from title + chapterLabel if new
     const a = { ...assignment }
     if (!a.slug || isNew) {
       a.slug = makeSlug(a.title, a.chapterLabel)
@@ -53,7 +103,7 @@ export default function Editor() {
     await saveAssignment(a)
     setAssignment(a)
     setDirty(false)
-    toast('Saved ✓', 'success')
+    toast('Saved', 'success')
     if (isNew) nav(`/edit/${a.slug}`, { replace: true })
   }
 
@@ -69,28 +119,20 @@ export default function Editor() {
     setDownloading(false)
   }
 
-  // ── AI generation ────────────────────────────
+  // ── AI generation (via server proxy) ────────────────────────────
   async function generateWithAI() {
-    const apiKey = prompt('Enter your Anthropic API key to generate content:')
-    if (!apiKey) return
-
     setGenerating(true)
     toast('Generating assignment content…')
 
     try {
-      const prompt = buildGenerationPrompt(assignment)
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const promptText = buildGenerationPrompt(assignment)
+      const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-calls': 'true',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 4000,
-          messages: [{ role: 'user', content: prompt }]
+          messages: [{ role: 'user', content: promptText }]
         })
       })
 
@@ -138,7 +180,7 @@ export default function Editor() {
     <div className={styles.page}>
       {/* ── Top bar ── */}
       <header className={styles.topBar}>
-        <button className={`btn btn-ghost btn-sm`} onClick={() => nav('/dashboard')}>
+        <button className="btn btn-ghost btn-sm" onClick={() => nav('/dashboard')}>
           ← Dashboard
         </button>
         <div className={styles.topCenter}>
@@ -150,11 +192,11 @@ export default function Editor() {
           )}
         </div>
         <div className={styles.topActions}>
-          {dirty && <span className={styles.unsaved}>● Unsaved</span>}
+          {dirty && <span className="badge badge-warning badge-sm gap-1">● Unsaved</span>}
           <button className="btn btn-ghost btn-sm" onClick={() => window.open(`/${assignment.slug}`, '_blank')} disabled={!assignment.slug || isNew}>
             ↗ Preview
           </button>
-          <button className={`btn btn-ghost btn-sm`} onClick={generateWithAI} disabled={generating}>
+          <button className="btn btn-ghost btn-sm" onClick={generateWithAI} disabled={generating}>
             {generating ? '⏳ Generating…' : '✦ AI Generate'}
           </button>
           <button className="btn btn-primary btn-sm" onClick={save}>
@@ -164,22 +206,24 @@ export default function Editor() {
       </header>
 
       {/* ── Tab nav ── */}
-      <nav className={styles.tabNav}>
-        {[
-          { id:'meta',  label:'Assignment Info' },
-          { id:'part1', label:`Part 1 — Quiz (${assignment.p1?.questions?.length || 0} questions)` },
-          { id:'part2', label:'Part 2 — Scenario' },
-          { id:'export', label:'↓ Export SCORM' },
-        ].map(t => (
-          <button
-            key={t.id}
-            className={`${styles.tabBtn} ${activeTab === t.id ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
+      <div className={styles.tabNav}>
+        <div className="tabs tabs-bordered w-full">
+          {[
+            { id:'meta',  label:'Assignment Info' },
+            { id:'part1', label:`Part 1 — Quiz (${assignment.p1?.questions?.length || 0})` },
+            { id:'part2', label:'Part 2 — Scenario' },
+            { id:'export', label:'↓ Export SCORM' },
+          ].map(t => (
+            <a
+              key={t.id}
+              className={`tab ${activeTab === t.id ? 'tab-active' : ''}`}
+              onClick={() => setActiveTab(t.id)}
+            >
+              {t.label}
+            </a>
+          ))}
+        </div>
+      </div>
 
       {/* ── Content ── */}
       <div className={styles.content}>
@@ -223,6 +267,7 @@ function MetaTab({ assignment, update }) {
       <SectionCard title="Assignment Info">
         <Field label="Assignment Title" hint="Shown in the header and Canvas">
           <input
+            className="input input-bordered w-full"
             value={assignment.title}
             onChange={e => update('title', e.target.value)}
             placeholder="e.g. Reading the Room"
@@ -230,6 +275,7 @@ function MetaTab({ assignment, update }) {
         </Field>
         <Field label="Chapter Label" hint="e.g. Chapters 4–5">
           <input
+            className="input input-bordered w-full"
             value={assignment.chapterLabel}
             onChange={e => update('chapterLabel', e.target.value)}
             placeholder="Chapters 4–5"
@@ -237,6 +283,7 @@ function MetaTab({ assignment, update }) {
         </Field>
         <Field label="URL Slug" hint="Auto-generated. Used as the URL: saleseqcoach.com/[slug]">
           <input
+            className="input input-bordered w-full"
             value={assignment.slug || ''}
             onChange={e => update('slug', e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
             placeholder="auto_generated_from_title"
@@ -244,6 +291,7 @@ function MetaTab({ assignment, update }) {
         </Field>
         <Field label="Status">
           <select
+            className="select select-bordered w-full"
             value={assignment.status}
             onChange={e => update('status', e.target.value)}
           >
@@ -253,11 +301,12 @@ function MetaTab({ assignment, update }) {
         </Field>
         <Field label="AI Model for Part 2">
           <select
+            className="select select-bordered w-full"
             value={assignment.apiModel}
             onChange={e => update('apiModel', e.target.value)}
           >
-            <option value="claude-haiku-4-5-20251001">Haiku — Fast &amp; cheap (recommended)</option>
-            <option value="claude-sonnet-4-6">Sonnet — Smarter, more expensive</option>
+            <option value="claude-haiku-4-5-20251001">Haiku — Fast &amp; cost-effective</option>
+            <option value="claude-sonnet-4-6">Sonnet — Advanced reasoning</option>
           </select>
         </Field>
       </SectionCard>
@@ -305,10 +354,10 @@ function Part1Tab({ assignment, update }) {
     <div className={styles.tabContent}>
       <SectionCard title="Part 1 Settings">
         <Field label="Section Title">
-          <input value={assignment.p1?.title || ''} onChange={e => update('p1.title', e.target.value)} />
+          <input className="input input-bordered w-full" value={assignment.p1?.title || ''} onChange={e => update('p1.title', e.target.value)} />
         </Field>
         <Field label="Description shown to students">
-          <textarea value={assignment.p1?.description || ''} onChange={e => update('p1.description', e.target.value)} rows={2} />
+          <textarea className="textarea textarea-bordered w-full" value={assignment.p1?.description || ''} onChange={e => update('p1.description', e.target.value)} rows={2} />
         </Field>
       </SectionCard>
 
@@ -356,12 +405,12 @@ function QuestionCard({ question, idx, total, onChange, onRemove, onMove }) {
           {question.text ? question.text.slice(0, 60) + (question.text.length > 60 ? '…' : '') : '(no text yet)'}
         </div>
         <div className={styles.questionControls}>
-          <button className="btn btn-ghost btn-sm" onClick={() => onMove(-1)} disabled={idx === 0}>↑</button>
-          <button className="btn btn-ghost btn-sm" onClick={() => onMove(1)} disabled={idx === total - 1}>↓</button>
-          <button className="btn btn-ghost btn-sm" onClick={() => setCollapsed(!collapsed)}>
+          <button className="btn btn-ghost btn-sm btn-square" onClick={() => onMove(-1)} disabled={idx === 0}>↑</button>
+          <button className="btn btn-ghost btn-sm btn-square" onClick={() => onMove(1)} disabled={idx === total - 1}>↓</button>
+          <button className="btn btn-ghost btn-sm btn-square" onClick={() => setCollapsed(!collapsed)}>
             {collapsed ? '▼' : '▲'}
           </button>
-          <button className="btn btn-danger btn-sm" onClick={onRemove}>✕</button>
+          <button className="btn btn-error btn-outline btn-sm btn-square" onClick={onRemove}>✕</button>
         </div>
       </div>
 
@@ -369,6 +418,7 @@ function QuestionCard({ question, idx, total, onChange, onRemove, onMove }) {
         <div className={styles.questionBody}>
           <Field label="Question Text">
             <textarea
+              className="textarea textarea-bordered w-full"
               value={question.text}
               onChange={e => onChange('text', e.target.value)}
               rows={2}
@@ -387,6 +437,7 @@ function QuestionCard({ question, idx, total, onChange, onRemove, onMove }) {
                   {letters[oi]}
                 </div>
                 <input
+                  className="input input-bordered input-sm flex-1"
                   value={opt}
                   onChange={e => {
                     const opts = [...question.options]
@@ -396,7 +447,7 @@ function QuestionCard({ question, idx, total, onChange, onRemove, onMove }) {
                   placeholder={`Option ${letters[oi]}`}
                 />
                 {question.correct === oi && (
-                  <span className={styles.correctBadge}>✓ Correct</span>
+                  <span className="badge badge-success badge-sm gap-1">✓ Correct</span>
                 )}
               </div>
             ))}
@@ -405,6 +456,7 @@ function QuestionCard({ question, idx, total, onChange, onRemove, onMove }) {
           <div className={styles.feedbackRow}>
             <Field label="Feedback if correct">
               <input
+                className="input input-bordered w-full"
                 value={question.feedback?.correct || ''}
                 onChange={e => onChange('feedback.correct', e.target.value)}
                 placeholder="Great! Because..."
@@ -412,6 +464,7 @@ function QuestionCard({ question, idx, total, onChange, onRemove, onMove }) {
             </Field>
             <Field label="Feedback if incorrect">
               <input
+                className="input input-bordered w-full"
                 value={question.feedback?.incorrect || ''}
                 onChange={e => onChange('feedback.incorrect', e.target.value)}
                 placeholder="Not quite. The answer is X because..."
@@ -435,25 +488,25 @@ function Part2Tab({ assignment, update }) {
     <div className={styles.tabContent}>
       <SectionCard title="Scenario Settings">
         <Field label="Scenario Title">
-          <input value={p2.title || ''} onChange={e => update('p2.title', e.target.value)} />
+          <input className="input input-bordered w-full" value={p2.title || ''} onChange={e => update('p2.title', e.target.value)} />
         </Field>
         <Field label="Description (shown to students)">
-          <textarea value={p2.description || ''} onChange={e => update('p2.description', e.target.value)} rows={2} />
+          <textarea className="textarea textarea-bordered w-full" value={p2.description || ''} onChange={e => update('p2.description', e.target.value)} rows={2} />
         </Field>
         <div className={styles.twoCol}>
           <Field label="Student Role Label" hint="Shown as a chip, e.g. 'Your Role: Sales Rep'">
-            <input value={p2.roleLabel || ''} onChange={e => update('p2.roleLabel', e.target.value)} />
+            <input className="input input-bordered w-full" value={p2.roleLabel || ''} onChange={e => update('p2.roleLabel', e.target.value)} />
           </Field>
           <Field label="AI Avatar Label" hint="2-3 chars shown in chat, e.g. PAT, REP, BOB">
-            <input value={p2.aiAvatarLabel || ''} onChange={e => update('p2.aiAvatarLabel', e.target.value)} maxLength={4} />
+            <input className="input input-bordered w-full" value={p2.aiAvatarLabel || ''} onChange={e => update('p2.aiAvatarLabel', e.target.value)} maxLength={4} />
           </Field>
         </div>
         <Field label="Max Turns" hint="10–14 recommended">
           <input
+            className="input input-bordered w-24"
             type="number" min={4} max={20}
             value={p2.maxTurns || 12}
             onChange={e => update('p2.maxTurns', parseInt(e.target.value))}
-            style={{width:100}}
           />
         </Field>
       </SectionCard>
@@ -461,6 +514,7 @@ function Part2Tab({ assignment, update }) {
       <SectionCard title="Context Block" hint="HTML shown above the chat window. Tell students what's happening.">
         <Field label="Scenario Context (HTML allowed)">
           <textarea
+            className="textarea textarea-bordered w-full"
             value={p2.scenarioContext || ''}
             onChange={e => update('p2.scenarioContext', e.target.value)}
             rows={4}
@@ -469,6 +523,7 @@ function Part2Tab({ assignment, update }) {
         </Field>
         <Field label="Opening Message from AI Character">
           <textarea
+            className="textarea textarea-bordered w-full"
             value={p2.openingMessage || ''}
             onChange={e => update('p2.openingMessage', e.target.value)}
             rows={3}
@@ -482,6 +537,7 @@ function Part2Tab({ assignment, update }) {
         hint="This defines who Claude is playing. Be specific about personality, goals, and how to react to good vs bad sales technique."
       >
         <textarea
+          className="textarea textarea-bordered w-full"
           value={p2.systemPrompt || ''}
           onChange={e => update('p2.systemPrompt', e.target.value)}
           rows={14}
@@ -493,6 +549,7 @@ function Part2Tab({ assignment, update }) {
         {criteria.map((c, i) => (
           <div key={i} className={styles.criteriaRow}>
             <input
+              className="input input-bordered flex-1"
               value={c}
               onChange={e => {
                 const arr = [...criteria]; arr[i] = e.target.value
@@ -501,7 +558,7 @@ function Part2Tab({ assignment, update }) {
               placeholder="e.g. Did the student ask discovery questions?"
             />
             <button
-              className="btn btn-danger btn-sm"
+              className="btn btn-error btn-outline btn-sm btn-square"
               onClick={() => update('p2.evaluationCriteria', criteria.filter((_,j)=>j!==i))}
             >✕</button>
           </div>
@@ -530,41 +587,29 @@ function ExportTab({ assignment, onDownload, downloading, dirty, onSave }) {
           thin launcher that loads the assignment from its live URL.
         </p>
 
-        <div className={styles.exportMeta}>
-          <div className={styles.exportRow}>
-            <span className={styles.exportKey}>Assignment URL</span>
-            <a href={url} target="_blank" className={styles.exportVal}>{url}</a>
-          </div>
-          <div className={styles.exportRow}>
-            <span className={styles.exportKey}>SCORM Version</span>
-            <span className={styles.exportVal}>2004 4th Edition</span>
-          </div>
-          <div className={styles.exportRow}>
-            <span className={styles.exportKey}>Filename</span>
-            <span className={styles.exportVal}>{assignment.slug}.zip</span>
-          </div>
-          <div className={styles.exportRow}>
-            <span className={styles.exportKey}>Passing score</span>
-            <span className={styles.exportVal}>70%</span>
-          </div>
-          <div className={styles.exportRow}>
-            <span className={styles.exportKey}>Questions</span>
-            <span className={styles.exportVal}>{assignment.p1?.questions?.length || 0}</span>
-          </div>
+        <div className="overflow-x-auto mt-3">
+          <table className="table table-sm">
+            <tbody>
+              <tr><td className="font-mono text-xs uppercase tracking-wider opacity-50 w-40">Assignment URL</td><td><a href={url} target="_blank" className="link link-primary">{url}</a></td></tr>
+              <tr><td className="font-mono text-xs uppercase tracking-wider opacity-50">SCORM Version</td><td>2004 4th Edition</td></tr>
+              <tr><td className="font-mono text-xs uppercase tracking-wider opacity-50">Filename</td><td>{assignment.slug}.zip</td></tr>
+              <tr><td className="font-mono text-xs uppercase tracking-wider opacity-50">Passing Score</td><td>70%</td></tr>
+              <tr><td className="font-mono text-xs uppercase tracking-wider opacity-50">Questions</td><td>{assignment.p1?.questions?.length || 0}</td></tr>
+            </tbody>
+          </table>
         </div>
 
         {dirty && (
-          <div className={styles.exportWarn}>
-            ⚠ You have unsaved changes. Save before downloading to ensure the zip reflects your latest edits.
-            <button className="btn btn-primary btn-sm" onClick={onSave} style={{marginLeft:12}}>Save Now</button>
+          <div className="alert alert-warning mt-4">
+            <span>⚠ You have unsaved changes. Save before downloading.</span>
+            <button className="btn btn-primary btn-sm" onClick={onSave}>Save Now</button>
           </div>
         )}
 
         <button
-          className="btn btn-primary"
+          className="btn btn-primary mt-4"
           onClick={onDownload}
           disabled={downloading || !assignment.slug}
-          style={{marginTop:16}}
         >
           {downloading ? '⏳ Generating…' : '↓ Download SCORM Zip'}
         </button>
@@ -590,10 +635,12 @@ function ExportTab({ assignment, onDownload, downloading, dirty, onSave }) {
 ================================================================ */
 function SectionCard({ title, hint, children }) {
   return (
-    <div className={styles.sectionCard}>
-      <div className={styles.sectionCardTitle}>{title}</div>
-      {hint && <div className={styles.sectionCardHint}>{hint}</div>}
-      <div className={styles.sectionCardBody}>{children}</div>
+    <div className="card bg-base-200 border border-base-300 shadow-sm">
+      <div className="card-body p-5 gap-3">
+        <h3 className="text-xs uppercase tracking-widest text-primary font-medium" style={{fontFamily:'var(--font-mono)'}}>{title}</h3>
+        {hint && <p className="text-xs opacity-50 -mt-1 leading-relaxed">{hint}</p>}
+        <div className="flex flex-col gap-3.5">{children}</div>
+      </div>
     </div>
   )
 }
@@ -626,7 +673,7 @@ function setNested(obj, path, value) {
 }
 
 function buildGenerationPrompt(assignment) {
-  return `You are helping build a Sales EQ college assignment for a Professional Sales course. 
+  return `You are helping build a Sales EQ college assignment for a Professional Sales course.
 The assignment covers: ${assignment.chapterLabel || 'the assigned chapters'}.
 Assignment title hint: "${assignment.title}"
 

@@ -58,30 +58,9 @@ textarea { resize: vertical; }
 
 select option { background: var(--surface2); }
 
-/* ── Shared button styles ── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
-  border-radius: 7px;
-  border: none;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: all var(--trans);
-  white-space: nowrap;
-}
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-primary  { background: var(--accent); color: #ffffff; }
-.btn-primary:hover:not(:disabled) { background: #7ab5cc; transform: translateY(-1px); }
-.btn-ghost    { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-.btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-.btn-danger   { background: rgba(245,101,101,0.12); color: var(--danger); border: 1px solid rgba(245,101,101,0.3); }
+/* ── Button aliases for DaisyUI compatibility ── */
+.btn-danger { --btn-color: var(--danger, #f56565); background: rgba(245,101,101,0.12); color: var(--danger); border: 1px solid rgba(245,101,101,0.3); }
 .btn-danger:hover:not(:disabled) { background: rgba(245,101,101,0.2); }
-.btn-success  { background: var(--success); color: #0a0c10; }
-.btn-success:hover:not(:disabled) { background: #9ae6b4; }
-.btn-sm { padding: 5px 12px; font-size: 11px; }
 
 /* ── Form label ── */
 .field-label {
