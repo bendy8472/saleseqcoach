@@ -24,7 +24,13 @@ export default function Home() {
 
   useEffect(() => {
     fetchAssignments().then(data => {
-      setAssignments(data.filter(a => a.status === 'published'))
+      const published = data.filter(a => a.status === 'published')
+      published.sort((a, b) => {
+        const numA = parseInt((a.chapterLabel || '').match(/\d+/)?.[0]) || 999
+        const numB = parseInt((b.chapterLabel || '').match(/\d+/)?.[0]) || 999
+        return numA - numB
+      })
+      setAssignments(published)
       setLoading(false)
     })
   }, [])
