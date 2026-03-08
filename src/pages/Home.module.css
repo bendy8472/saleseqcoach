@@ -16,10 +16,26 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* Nav logo */
+/* Nav brand */
+.navBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
 .navLogo {
-  height: 36px;
+  height: 32px;
   filter: drop-shadow(0 0 12px rgba(99,163,190,0.2));
+}
+
+.navTitle {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  white-space: nowrap;
 }
 
 .heroLogo {

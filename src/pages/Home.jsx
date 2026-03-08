@@ -40,12 +40,12 @@ export default function Home() {
       {/* Navbar */}
       <div className="navbar bg-base-200 border-b border-base-300 px-4">
         <div className="navbar-start">
-          <span className="text-xs opacity-40 font-mono tracking-widest uppercase select-none">Sales EQ</span>
+          <a href="/" className={styles.navBrand}>
+            <img src="/logo.png" alt="Sales EQ Coach" className={styles.navLogo} />
+            <span className={styles.navTitle}>Sales EQ Coach</span>
+          </a>
         </div>
         <div className="navbar-center">
-          <a href="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Sales EQ Coach" className={styles.navLogo} />
-          </a>
         </div>
         <div className="navbar-end gap-1">
           {/* Theme toggle */}
